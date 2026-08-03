@@ -21,3 +21,10 @@ obj/
 # Captvty ne doit jamais être ajouté au dépôt
 Captvty.exe
 Captvty-wine*.exe
+
+# Contenu local non redistribué
+runtime/*
+!runtime/.gitkeep
+
+downloads/*
+!downloads/.gitkeep
