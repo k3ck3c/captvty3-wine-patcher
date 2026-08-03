@@ -15,19 +15,33 @@ Il modifie un exécutable fourni par l'utilisateur.
 - État actuel
 - 
 Le problème de démarrage a été analysé.
+
 Plusieurs causes indépendantes ont été identifiées.
+
 Un patcheur IL (Mono.Cecil) permet désormais de faire fonctionner Captvty 3.0.1.24 sous Wine.
+
 Correctifs identifiés
+
 neutralisation de _zcA::_UXB() (initialisation spécifique à Windows) ;
+
 remplacement de l'initialisation des couleurs via VisualStyleRenderer par SystemColors ;
+
 protection de plusieurs accès non sécurisés :
+
 FileInfo.Length
+
 Stream.Position
+
 constructeur utilisant FileInfo.Length après renommage du fichier.
+
 Résultat
+
 Captvty démarre correctement ;
+
 les listes d'émissions s'affichent ;
+
 les téléchargements aboutissent ;
+
 le fichier .ts produit est valide (lecture avec mpv/MediaInfo).
 
 
