@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+
+ARG WINE_BASE=wine-lab-base:11.5-r2
+FROM ${WINE_BASE}
+
+USER lab
+
+ENV HOME=/home/lab \
+    WINEPREFIX=/home/lab/.wine \
+    WINEARCH=win64 \
+    WINEDEBUG=-all \
+    WINEDLLOVERRIDES="mscoree,mshtml=" \
+    XDG_RUNTIME_DIR=/tmp/runtime-lab
+
+RUN mkdir -p "$XDG_RUNTIME_DIR" \
+    && chmod 700 "$XDG_RUNTIME_DIR" \
+    && mkdir -p "$WINEPREFIX" \
+    && wineboot -u \
+    && wineserver -w \
+    && winetricks -q dotnet48 \
+    && wineserver -w
+
+CMD ["bash"]
