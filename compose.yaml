@@ -1,0 +1,20 @@
+services:
+  captvty3:
+    build:
+      context: ./docker
+
+    image: captvty3-wine-patcher:local
+    container_name: captvty3
+
+    environment:
+      DISPLAY: ${DISPLAY}
+      XAUTHORITY: /tmp/.docker.xauth
+      WINEDEBUG: ${WINEDEBUG:--all}
+
+    volumes:
+      - ./runtime:/opt/captvty:ro
+      - ${CAPTVTY_DOWNLOADS:-./downloads}:/downloads
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY}:/tmp/.docker.xauth:ro
+
+    network_mode: host
