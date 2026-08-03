@@ -1,0 +1,23 @@
+# Binaires construits localement
+*.exe
+*.dll
+*.pdb
+*.mdb
+
+# Journaux et fichiers temporaires
+*.log
+*.tmp
+*.bak
+*~
+
+# Archives
+*.zip
+*.7z
+
+# Répertoires de compilation
+bin/
+obj/
+
+# Captvty ne doit jamais être ajouté au dépôt
+Captvty.exe
+Captvty-wine*.exe
