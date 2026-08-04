@@ -6,7 +6,9 @@ Ce projet fournit un patcheur écrit avec **Mono.Cecil** qui modifie automatique
 
 ## Origine du projet
 
-Ce projet est né d'un rapport de bug Wine et d'une analyse méthodique visant à améliorer la compatibilité de Captvty 3.0.1.24 sous Wine. Les correctifs proposés ne modifient pas les fonctionnalités de Captvty ; ils rendent simplement l'application plus robuste face à des situations qui peuvent se produire sous Wine.
+Ce projet est né d'un rapport de bug Wine 
+https://bugs.winehq.org/show_bug.cgi?id=55955
+et d'une analyse méthodique visant à améliorer la compatibilité de Captvty 3.0.1.24 sous Wine. Les correctifs proposés ne modifient pas les fonctionnalités de Captvty ; ils rendent simplement l'application plus robuste face à des situations qui peuvent se produire sous Wine.
 
 Le but n'est pas de modifier Captvty, mais uniquement d'améliorer sa compatibilité avec Wine en appliquant le minimum de changements possibles.
 
