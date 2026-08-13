@@ -1,6 +1,6 @@
 # Captvty 3 Wine Patcher
 
-Patch de compatibilité Wine pour **Captvty 3.0.1.24**.
+Patch de compatibilité Wine pour **Captvty 3.0.1.24* et Captvty 3.0.1.25*.
 
 Ce projet fournit un patcheur écrit avec **Mono.Cecil** qui modifie automatiquement un exemplaire original de Captvty afin de corriger plusieurs problèmes rencontrés sous Wine.
 
