@@ -20,12 +20,21 @@ fi
 
 echo "Utilisation de Mono.Cecil : $CECIL_DLL"
 
+echo
+echo "Construction du patcheur 3.0.1.24..."
 mcs \
   -r:"$CECIL_DLL" \
   -r:System.Drawing \
   -out:patch-captvty30124-wine.exe \
   src/patch-captvty30124-wine.cs
 
+echo "Construction du patcheur 3.0.1.27..."
+mcs \
+  -r:"$CECIL_DLL" \
+  -out:patch-captvty30127-wine.exe \
+  src/patch-captvty30127-wine.cs
+
 echo
-echo "Patcheur construit :"
+echo "Patcheurs construits :"
 echo "  $ROOT_DIR/patch-captvty30124-wine.exe"
+echo "  $ROOT_DIR/patch-captvty30127-wine.exe"

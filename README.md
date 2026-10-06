@@ -1,6 +1,6 @@
 # Captvty 3 Wine Patcher
 
-Patch de compatibilité Wine pour **Captvty 3.0.1.24* et Captvty 3.0.1.25*.
+Correctifs de compatibilité Wine pour **Captvty 3.0.1.24, 3.0.1.25 et 3.0.1.27**.
 
 Ce projet fournit un patcheur écrit avec **Mono.Cecil** qui modifie automatiquement un exemplaire original de Captvty afin de corriger plusieurs problèmes rencontrés sous Wine.
 
@@ -51,6 +51,29 @@ Le patcheur applique les corrections suivantes :
 - protection des accès à `Stream.Position` lorsque le flux est nul ;
 - protection de la lecture de la taille du fichier pendant la finalisation d'un téléchargement.
 
+## Captvty 3.0.1.27
+
+Pour Captvty 3.0.1.27, cinq corrections spécifiques sont appliquées :
+
+- neutralisation du hook UxTheme qui échoue sous Wine ;
+- remplacement de l'initialisation VisualStyleRenderer par SystemColors.Window ;
+- neutralisation de l'extraction d'icônes depuis imageres.dll, tout en conservant l'initialisation du gestionnaire yt-dlp ;
+- neutralisation de LinearGradientBrush.RotateTransform(20f), non implémenté dans ce chemin sous Wine ;
+- hauteur initiale du panneau de téléchargements réduite de 300 à 150.
+
+Le patcheur vérifie les signatures IL attendues avant d'appliquer les modifications.
+
+SHA-256 de l'exécutable 3.0.1.27 original testé :
+
+    a4fd6bc53c41804225e1760b4fb4bfb339ed06895953339ee1318d7d8276b69c
+
+SHA-256 après application du patch :
+
+    72a05e34ee9b5358db011fd94721d2191211168671f64ec8546269bbc5866cfe
+
+La version patchée a été validée sous Wine avec lancement de l'interface,
+consultation des programmes et téléchargements réels.
+
 ## Ce que ce projet ne fait pas
 
 Ce dépôt :
@@ -82,6 +105,11 @@ scripts/patch.sh \
     Captvty.exe \
     Captvty-patched.exe
 ```
+
+Le script `patch.sh` accepte actuellement de façon stricte l'exécutable original
+de Captvty 3.0.1.27. Son SHA-256 est vérifié avant toute modification ; un
+exécutable différent est refusé et aucun fichier de sortie n'est créé.
+
 
 ## Utilisation
 
