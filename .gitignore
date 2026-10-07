@@ -31,3 +31,12 @@ Captvty-wine*.exe
 
 runtime/*
 !runtime/.gitkeep
+
+# Téléchargements et configuration locale
+downloads/
+
+.env
+
+*.before-*
+
+docker/Dockerfile.wine-lab

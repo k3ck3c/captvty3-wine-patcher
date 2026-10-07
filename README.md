@@ -119,6 +119,50 @@ Le fichier patché peut être exécuté :
 - dans un conteneur Docker ;
 - via Docker Compose.
 
+### Exécution avec Docker Compose
+
+L'environnement Docker repose sur Debian 13, Wine Staging 11.16 (64 bits) et .NET Framework 4.8.
+
+L'image ne contient aucun exécutable Captvty. L'utilisateur doit disposer de son propre exemplaire de Captvty 3.0.1.27.
+
+Depuis la racine du dépôt :
+
+```bash
+./scripts/prepare.sh ~/Téléchargements/captvty-3.0.1.27
+docker compose build
+docker compose up --no-build
+```
+
+Le script `prepare.sh` compile les patcheurs, vérifie le SHA-256 de l'exécutable original, applique les cinq corrections Wine et prépare le répertoire `runtime/`.
+
+Le fichier original n'est pas modifié.
+
+### Répertoires Docker
+
+- `runtime/` : fichiers Captvty, montés en lecture seule.
+- `runtime/Vidéos/` : point de montage créé automatiquement par `prepare.sh`.
+- `downloads/` : destination des téléchargements sur l'hôte, accessible dans le conteneur sous `/opt/captvty/Vidéos`.
+
+Le conteneur utilise l'affichage X11 de l'hôte.
+
+### Optimisation de l'image
+
+L'installation de Wine utilise `--no-install-recommends`.
+
+Sur la configuration testée, cette optimisation a réduit l'image complète de 6,06 Go à 5,26 Go, tout en conservant .NET Framework 4.8 et le fonctionnement de Captvty.
+
+### Caches BuildKit
+
+Le Dockerfile utilise trois caches persistants entre les constructions :
+
+1. `/var/cache/apt` : cache des archives APT.
+2. `/var/lib/apt/lists` : listes des dépôts APT.
+3. `/home/captvty/.cache/winetricks` : téléchargements Winetricks, notamment l'installateur .NET Framework 4.8.
+
+Ces caches accélèrent les reconstructions, mais ne sont pas inclus dans l'image finale.
+
+Le répertoire parent `/home/captvty/.cache` est créé avec les permissions de l'utilisateur `captvty`, afin de permettre également l'utilisation du cache Mesa.
+
 ## Sécurité
 
 Ce projet ne distribue volontairement aucun exécutable Captvty modifié.
@@ -130,6 +174,8 @@ L'objectif est que chacun puisse :
 - appliquer le patch à son propre exemplaire de Captvty.
 
 Ainsi, il n'est jamais nécessaire de faire confiance à un exécutable modifié fourni par un tiers.
+
+
 
 ## Licence
 

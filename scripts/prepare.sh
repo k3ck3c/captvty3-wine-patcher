@@ -25,6 +25,7 @@ echo "[1/4] Compilation du patcheur"
 echo "[2/4] Préparation du répertoire d'exécution"
 find "$RUNTIME_DIR" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
 cp -a "$SOURCE_DIR"/. "$RUNTIME_DIR"/
+mkdir -p "$RUNTIME_DIR/Vidéos"
 
 echo "[3/4] Application du patch"
 "$ROOT_DIR/scripts/patch.sh" \
