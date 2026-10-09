@@ -150,6 +150,18 @@ Le conteneur utilise l'affichage X11 de l'hôte.
 Un conteneur compagnon indépendant permet d'analyser Captvty3
 sous Wine sans alourdir l'image Docker de production.
 
+Le conteneur compagnon partage avec le conteneur Captvty3 :
+
+- **L'espace de noms des processus (PID)** grâce à `--pid=container:...`, permettant à GDB, strace et lsof d'inspecter les processus Wine.
+- **L'espace de noms réseau** grâce à `--network=container:...`, permettant d'observer les connexions TCP et les sockets réseau.
+- **Les volumes montés** grâce à `--volumes-from`, permettant d'accéder aux fichiers de l'application.
+
+L'option `--cap-add=SYS_PTRACE` autorise l'attachement des outils de diagnostic aux processus. L'option `--security-opt seccomp=unconfined` assouplit le filtrage des appels système pour ces investigations.
+
+Le compagnon conserve son propre système de fichiers et ses outils. Il peut être démarré et supprimé indépendamment, **sans modifier ni alourdir l'image de production**.
+
+Ces permissions supplémentaires sont réservées au diagnostic dans un environnement de confiance.
+
 Il fournit notamment GDB, strace, lsof, binutils et ss pour
 examiner les processus, les appels système et le trafic réseau.
 
