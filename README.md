@@ -147,6 +147,12 @@ Le conteneur utilise l'affichage X11 de l'hôte.
 
 ### Optimisation de l'image
 
+Sur la configuration testée, les optimisations successives ont permis de réduire l'image Docker de **6,06 Go à 2,92 Go**, soit une réduction d'environ **52 %**, tout en conservant Wine Staging 11.16, le nouveau WoW64, .NET Framework 4.8 et le fonctionnement de Captvty.
+
+La version finale validée est **`captvty3-wine-patcher:no-netcache`**. Son fonctionnement a été vérifié par le démarrage de Captvty, le téléchargement d'une émission et la lecture audio/vidéo avec `mpv`.
+
+La méthode complète est documentée en français dans [OPTIMISATION-DOCKER.md](OPTIMISATION-DOCKER.md) et en anglais dans [DOCKER-OPTIMIZATION.md](DOCKER-OPTIMIZATION.md).
+
 L'installation de Wine utilise `--no-install-recommends`.
 
 Sur la configuration testée, cette optimisation a réduit l'image complète de 6,06 Go à 5,26 Go, tout en conservant .NET Framework 4.8 et le fonctionnement de Captvty.
