@@ -145,6 +145,19 @@ Le fichier original n'est pas modifié.
 
 Le conteneur utilise l'affichage X11 de l'hôte.
 
+### Conteneur compagnon de diagnostic (debug sidecar)
+
+Un conteneur compagnon indépendant permet d'analyser Captvty3
+sous Wine sans alourdir l'image Docker de production.
+
+Il fournit notamment GDB, strace, lsof, binutils et ss pour
+examiner les processus, les appels système et le trafic réseau.
+
+Les investigations réalisées (Wine WoW64, X11/Xwayland,
+connexions HTTPS et mesures de débit) sont documentées en anglais.
+
+**Documentation complète : [Debug sidecar](docs/debug-sidecar.md)**
+
 ### Optimisation de l'image
 
 Sur la configuration testée, les optimisations successives ont permis de réduire l'image Docker de **6,06 Go à 2,66 Go** (2,48 Gio), soit une réduction d'environ **56 %**, tout en conservant Wine Staging 11.16, le nouveau WoW64, .NET Framework 4.8 et le fonctionnement de Captvty.
