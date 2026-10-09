@@ -155,8 +155,6 @@ La méthode complète est documentée en français dans [OPTIMISATION-DOCKER.md]
 
 L'installation de Wine utilise `--no-install-recommends`.
 
-Sur la configuration testée, cette optimisation a réduit l'image complète de 6,06 Go à 5,26 Go, tout en conservant .NET Framework 4.8 et le fonctionnement de Captvty.
-
 ### Caches BuildKit
 
 Le Dockerfile utilise trois caches persistants entre les constructions :
