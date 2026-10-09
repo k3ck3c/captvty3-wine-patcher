@@ -1,0 +1,99 @@
+# syntax=docker/dockerfile:1
+
+ARG USER_NAME=captvty
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+FROM captvty3-wine-patcher:dedup-python AS source
+
+FROM debian:13-slim AS final
+
+ARG USER_NAME
+ARG USER_UID
+ARG USER_GID
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV WINEARCH=win64
+ENV WINEPREFIX=/home/${USER_NAME}/.wine
+ENV HOME=/home/${USER_NAME}
+ENV WINEDEBUG=-all
+ENV LANG=fr_FR.UTF-8
+ENV LANGUAGE=fr_FR:fr
+ENV LC_ALL=fr_FR.UTF-8
+
+USER root
+
+# Dépendances Linux AMD64 uniquement.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update \
+ && apt-get install -y --no-install-recommends \
+      locales \
+      ca-certificates \
+      winbind \
+      libasound2t64 \
+      libavcodec61 \
+      libavformat61 \
+      libavutil59 \
+      libfontconfig1 \
+      libfreetype6 \
+      libgnutls30t64 \
+      libgphoto2-6t64 \
+      libgstreamer1.0-0 \
+      libgstreamer-plugins-base1.0-0 \
+      libldap2 \
+      libmpg123-0t64 \
+      libopenal1 \
+      libpulse0 \
+      libsdl2-2.0-0 \
+      libv4l-0t64 \
+      libx11-6 \
+      libxext6 \
+      libxi6 \
+      libxrandr2 \
+      libxrender1 \
+      libxcomposite1 \
+      libxcursor1 \
+      libxfixes3 \
+      libxinerama1 \
+      libxxf86vm1 \
+      libgl1 \
+ && sed -i 's/^# *\(fr_FR.UTF-8 UTF-8\)/\1/' /etc/locale.gen \
+ && locale-gen \
+ && groupadd --gid "${USER_GID}" "${USER_NAME}" \
+ && useradd --uid "${USER_UID}" --gid "${USER_GID}" \
+      --create-home --shell /bin/bash "${USER_NAME}"
+
+# Wine 64 bits : DLL Windows et composants Unix.
+COPY --from=source /opt/wine-staging/bin /opt/wine-staging/bin
+COPY --from=source /opt/wine-staging/lib/wine/x86_64-unix /opt/wine-staging/lib/wine/x86_64-unix
+COPY --from=source /opt/wine-staging/lib/wine/x86_64-windows /opt/wine-staging/lib/wine/x86_64-windows
+
+# WoW64 : conserver les DLL Windows 32 bits,
+# mais PAS les composants Unix 32 bits.
+COPY --from=source /opt/wine-staging/lib/wine/i386-windows /opt/wine-staging/lib/wine/i386-windows
+
+# Bibliothèques et ressources communes de Wine.
+COPY --from=source /opt/wine-staging/share /opt/wine-staging/share
+
+RUN ln -s /opt/wine-staging/bin/wine /usr/bin/wine \
+ && ln -s /opt/wine-staging/bin/wineserver /usr/bin/wineserver \
+ && mkdir -p \
+      /home/${USER_NAME}/Captvty \
+      /home/${USER_NAME}/Downloads \
+      /home/${USER_NAME}/Config \
+      /home/${USER_NAME}/tmp \
+ && chown -R "${USER_UID}:${USER_GID}" /home/${USER_NAME}
+
+# Préfixe .NET 4.8 déjà installé et dédupliqué.
+COPY --from=source --chown=${USER_UID}:${USER_GID} \
+     /home/${USER_NAME}/.wine \
+     /home/${USER_NAME}/.wine
+
+COPY --chmod=755 entrypoint.sh \
+     /usr/local/bin/captvty3-entrypoint
+
+USER ${USER_NAME}
+WORKDIR /home/${USER_NAME}
+
+ENTRYPOINT ["/usr/local/bin/captvty3-entrypoint"]

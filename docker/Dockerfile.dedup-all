@@ -1,0 +1,227 @@
+# syntax=docker/dockerfile:1
+# ============================================================
+# Base Wine commune
+# ============================================================
+
+# syntax=docker/dockerfile:1
+
+ARG USER_NAME=captvty
+ARG USER_UID=1000
+ARG USER_GID=1000
+ARG WINE_DPI=144
+
+# ============================================================
+# Base Wine commune
+# ============================================================
+FROM debian:13-slim AS wine-runtime-base
+
+ARG USER_NAME
+ARG USER_UID
+ARG USER_GID
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV WINEARCH=win64
+ENV WINEPREFIX=/home/${USER_NAME}/.wine
+ENV HOME=/home/${USER_NAME}
+ENV WINEDEBUG=-all
+USER root
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    dpkg --add-architecture i386 \
+ && apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      update \
+ && apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      install -y --no-install-recommends \
+      ca-certificates \
+      wget \
+      unzip \
+      gnupg2 \
+ && mkdir -pm755 /etc/apt/keyrings \
+ && wget --tries=10 --timeout=60 \
+      -qO /etc/apt/keyrings/winehq-archive.key \
+      https://dl.winehq.org/wine-builds/winehq.key \
+ && wget --tries=10 --timeout=60 \
+      -qO /etc/apt/sources.list.d/winehq-trixie.sources \
+      https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources \
+ && apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      update \
+ && apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      install -y --no-install-recommends \
+      winehq-staging=11.16~trixie-1 wine-staging=11.16~trixie-1 wine-staging-amd64=11.16~trixie-1 wine-staging-i386:i386=11.16~trixie-1 \
+      winbind \
+ && groupadd --gid "${USER_GID}" "${USER_NAME}" \
+ && useradd \
+      --uid "${USER_UID}" \
+      --gid "${USER_GID}" \
+      --create-home \
+      --shell /bin/bash \
+      "${USER_NAME}" \
+ && apt-get purge -y --auto-remove gnupg2
+# ============================================================
+# Construction du préfixe Wine
+# ============================================================
+FROM wine-runtime-base AS wine-builder
+
+ARG USER_NAME
+ARG USER_UID
+ARG USER_GID
+ARG WINE_DPI
+
+ENV WINEARCH=win64
+ENV WINEPREFIX=/home/${USER_NAME}/.wine
+ENV HOME=/home/${USER_NAME}
+ENV WINEDEBUG=-all
+ENV DISPLAY=:99
+
+USER root
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      update \
+ && apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      install -y --no-install-recommends \
+      cabextract \
+      xvfb \
+      && wget --tries=10 --timeout=60 \
+      -O /usr/local/bin/winetricks \
+      https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks \
+ && chmod 755 /usr/local/bin/winetricks
+
+RUN install -d -o ${USER_UID} -g ${USER_GID} /home/${USER_NAME}/.cache
+
+USER ${USER_NAME}
+
+RUN --mount=type=cache,target=/home/${USER_NAME}/.cache/winetricks,uid=${USER_UID},gid=${USER_GID} \
+    set -eux; \
+    command -v winetricks; \
+    winetricks --version; \
+    Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & \
+    XVFB_PID=$!; \
+    trap 'kill "$XVFB_PID" 2>/dev/null || true' EXIT; \
+    export DISPLAY=:99; \
+    export WINEDLLOVERRIDES="mscoree,mshtml="; \
+    timeout 120s wineboot -u; \
+    test -d "$WINEPREFIX/drive_c"; \
+    wineserver -k || true; \
+    sleep 2; \
+    set +e; \
+    timeout 90m winetricks --verbose --unattended dotnet48; \
+    WT_RC=$?; \
+    set -e; \
+    echo "=== WINETRICKS RETURN CODE: $WT_RC ==="; \
+    echo "=== .NET DIRECTORIES ==="; \
+    find "$WINEPREFIX/drive_c/windows/Microsoft.NET" \
+      -maxdepth 4 -type d -print 2>/dev/null || true; \
+    echo "=== .NET REGISTRY ==="; \
+    wine reg query \
+      "HKLM\\Software\\Microsoft\\NET Framework Setup\\NDP" \
+      /s || true; \
+    echo "=== INSTALLER LOGS ==="; \
+    find "$WINEPREFIX" /tmp \
+      -type f \
+      \( -iname 'dd_*.log' \
+      -o -iname '*netfx*.log' \
+      -o -iname '*dotnet*.log' \
+      -o -iname '*setup*.log' \) \
+      -print \
+      -exec sh -c 'echo "----- $1"; tail -n 100 "$1"' sh {} \; \
+      2>/dev/null || true; \
+    test "$WT_RC" -eq 0; \
+    wineserver -w; \
+    wine reg add \
+      "HKCU\\Control Panel\\Desktop" \
+      /v LogPixels \
+      /t REG_DWORD \
+      /d "${WINE_DPI}" \
+      /f; \
+    wine reg query \
+      "HKCU\\Control Panel\\Desktop" \
+      /v LogPixels; \
+    wineserver -k || true; \
+    rm -rf \
+      "$WINEPREFIX/drive_c/windows/Microsoft.NET/Framework/v4.0.30319/SetupCache" \
+      "$WINEPREFIX/drive_c/windows/temp/"* \
+      "$WINEPREFIX/drive_c/users/${USER_NAME}/Temp/"* \
+      /tmp/*; \
+    test ! -d \
+      "$WINEPREFIX/drive_c/windows/Microsoft.NET/Framework/v4.0.30319/SetupCache"
+
+COPY --chown=${USER_UID}:${USER_GID} dedup-safe.tsv /tmp/dedup-safe.tsv
+
+RUN set -eu; \
+    count=0; \
+    while IFS="$(printf '\t')" read -r dest src; do \
+      test -f "$dest"; \
+      test -f "$src"; \
+      cmp "$dest" "$src"; \
+      rm "$dest"; \
+      ln -s "$src" "$dest"; \
+      count=$((count + 1)); \
+    done < /tmp/dedup-safe.tsv; \
+    echo "DEDUP: $count fichiers remplacés"
+
+FROM wine-runtime-base AS final
+
+ARG USER_NAME
+ARG USER_UID
+ARG USER_GID
+
+ENV LANG=fr_FR.UTF-8
+ENV LANGUAGE=fr_FR:fr
+ENV LC_ALL=fr_FR.UTF-8
+USER root
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      update \
+ && apt-get \
+      -o Acquire::Retries=10 \
+      -o Acquire::http::Timeout=60 \
+      -o Acquire::https::Timeout=60 \
+      install -y --no-install-recommends \
+      locales \
+ && sed -i 's/^# *\(fr_FR.UTF-8 UTF-8\)/\1/' /etc/locale.gen \
+ && locale-gen \
+ && mkdir -p \
+      /home/${USER_NAME}/Captvty \
+      /home/${USER_NAME}/Downloads \
+      /home/${USER_NAME}/Config \
+      /home/${USER_NAME}/tmp \
+       && chown -R "${USER_UID}:${USER_GID}" /home/${USER_NAME}
+
+COPY --from=wine-builder \
+     --chown=${USER_UID}:${USER_GID} \
+     /home/${USER_NAME}/.wine \
+     /home/${USER_NAME}/.wine
+
+COPY --chmod=755 entrypoint.sh \
+     /usr/local/bin/captvty3-entrypoint
+
+USER ${USER_NAME}
+WORKDIR /home/${USER_NAME}
+
+ENTRYPOINT ["/usr/local/bin/captvty3-entrypoint"]
