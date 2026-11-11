@@ -21,6 +21,7 @@ fi
 SHA=$(sha256sum "$INPUT" | awk '{print $1}')
 
 SHA_30127=a4fd6bc53c41804225e1760b4fb4bfb339ed06895953339ee1318d7d8276b69c
+SHA_30128=13e04a10367e2e7c7492104a81d110470d8def2cd965037d69d2d5d634f756a7
 
 case "$SHA" in
   "$SHA_30127")
@@ -28,13 +29,19 @@ case "$SHA" in
     PATCHER="$ROOT_DIR/patch-captvty30127-wine.exe"
     ;;
 
+  "$SHA_30128")
+    VERSION="3.0.1.28"
+    PATCHER="$ROOT_DIR/patch-captvty30128-wine.exe"
+    ;;
+
   *)
     echo "Erreur : Captvty.exe non reconnu." >&2
     echo "SHA-256 fourni :" >&2
     echo "  $SHA" >&2
     echo >&2
-    echo "Ce patcheur attend le Captvty.exe original de Captvty 3.0.1.27 :" >&2
-    echo "  $SHA_30127" >&2
+    echo "Ce patcheur attend un Captvty.exe original reconnu :" >&2
+    echo "  3.0.1.27 : $SHA_30127" >&2
+    echo "  3.0.1.28 : $SHA_30128" >&2
     echo >&2
     echo "Aucun fichier n'a été modifié." >&2
     exit 3

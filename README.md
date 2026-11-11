@@ -1,6 +1,6 @@
 # Captvty 3 Wine Patcher
 
-Correctifs de compatibilité Wine pour **Captvty 3.0.1.24, 3.0.1.25 et 3.0.1.27**.
+Correctifs de compatibilité Wine pour **Captvty 3.0.1.24, 3.0.1.25, 3.0.1.27 et 3.0.1.28**.
 
 Ce projet fournit un patcheur écrit avec **Mono.Cecil** qui modifie automatiquement un exemplaire original de Captvty afin de corriger plusieurs problèmes rencontrés sous Wine.
 
@@ -74,6 +74,34 @@ SHA-256 après application du patch :
 La version patchée a été validée sous Wine avec lancement de l'interface,
 consultation des programmes et téléchargements réels.
 
+## Captvty 3.0.1.28
+
+Le patcheur `src/patch-captvty30128-wine.cs` adapte les cinq
+corrections de Captvty 3.0.1.27 aux nouveaux identifiants
+obfusqués de Captvty 3.0.1.28.
+
+Les signatures IL sont vérifiées avant toute modification.
+
+SHA-256 de l'exécutable original testé :
+
+    13e04a10367e2e7c7492104a81d110470d8def2cd965037d69d2d5d634f756a7
+
+SHA-256 après application du patch :
+
+    fde410643418b5b1f3a5bc9e3bca22db424aeceaaf859e2abe0db3daba4c2987
+
+Tests réalisés sous Debian 13, Wine Staging 11.21 et
+.NET Framework 4.8 :
+
+- démarrage de Captvty ;
+- chargement du catalogue France 2 ;
+- affichage des détails d'une émission ;
+- téléchargement d'une émission de 838 Mio,
+  au format MPEG-TS (1600 × 900, H.264, deux pistes AAC).
+
+Le résultat du patch est reproductible : deux exécutions
+indépendantes ont produit le même SHA-256.
+
 ## Ce que ce projet ne fait pas
 
 Ce dépôt :
@@ -123,7 +151,7 @@ Le fichier patché peut être exécuté :
 
 L'environnement Docker repose sur Debian 13, Wine Staging 11.16 (64 bits) et .NET Framework 4.8.
 
-L'image ne contient aucun exécutable Captvty. L'utilisateur doit disposer de son propre exemplaire de Captvty 3.0.1.27.
+L'image ne contient aucun exécutable Captvty. L'utilisateur doit disposer de son propre exemplaire de Captvty 3.0.1.27 ou 3.0.1.28.
 
 Depuis la racine du dépôt :
 

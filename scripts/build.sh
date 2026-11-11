@@ -34,7 +34,14 @@ mcs \
   -out:patch-captvty30127-wine.exe \
   src/patch-captvty30127-wine.cs
 
+echo "Construction du patcheur 3.0.1.28..."
+mcs \
+  -r:"$CECIL_DLL" \
+  -out:patch-captvty30128-wine.exe \
+  src/patch-captvty30128-wine.cs
+
 echo
 echo "Patcheurs construits :"
 echo "  $ROOT_DIR/patch-captvty30124-wine.exe"
 echo "  $ROOT_DIR/patch-captvty30127-wine.exe"
+echo "  $ROOT_DIR/patch-captvty30128-wine.exe"
