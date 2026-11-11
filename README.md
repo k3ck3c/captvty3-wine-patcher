@@ -102,6 +102,17 @@ Tests réalisés sous Debian 13, Wine Staging 11.21 et
 Le résultat du patch est reproductible : deux exécutions
 indépendantes ont produit le même SHA-256.
 
+### Validation Docker de Captvty 3.0.1.28
+
+Test réalisé le 11 novembre 2026 sous Debian 13 avec
+`docker compose up --build` :
+
+- démarrage de l'interface graphique ;
+- chargement du catalogue France 2 ;
+- consultation des émissions et de leurs détails ;
+- téléchargement terminé de *Journal Météo Climat*
+  en 1080p, format TS (47,0 Mo).
+
 ## Ce que ce projet ne fait pas
 
 Ce dépôt :
